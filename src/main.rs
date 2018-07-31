@@ -17,10 +17,7 @@ struct Response {
 
 #[derive(Debug, FromForm)]
 struct NewPostsForm {
-    #[form(field = "types")]
     types: u8,
-
-    #[form(field = "content")]
     content: String,
 }
 
@@ -48,7 +45,7 @@ fn disagree(id: u8) -> Json<Response> {
     })
 }
 
-#[post("/new", data = "<new>", format = "application/x-www-form-urlencoded")]
+#[post("/new", data = "<new>")]
 fn new<'r>(new: Result<Form<'r, NewPostsForm>, Option<String>>) -> Json<Response> {
     match new {
         Ok(form) => format!("{:?}", form.get()),

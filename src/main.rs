@@ -1,16 +1,29 @@
-#![feature(plugin)]
 #![plugin(rocket_codegen)]
+#![feature(plugin, custom_derive)]
 
 extern crate rocket;
 extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
 
+
+use rocket::request::{Form};
 use rocket_contrib::{Json};
+
 #[derive(Serialize)]
 struct Response { 
     code: u8,
     msg: String
 }
+
+#[derive(Debug, FromForm)]
+struct NewPostsForm {
+    #[form(field = "types")]
+    types: u8,
+
+    #[form(field = "content")]
+    content: String,
+}
+
 
 #[get("/")]
 fn index() -> &'static str {
@@ -35,9 +48,13 @@ fn disagree(id: u8) -> Json<Response> {
     })
 }
 
-#[post("/new")]
-fn new(id: u8) -> Json<Response> {
-    println!("{}", &id);
+#[post("/new", data = "<new>", format = "application/x-www-form-urlencoded")]
+fn new<'r>(new: Result<Form<'r, NewPostsForm>, Option<String>>) -> Json<Response> {
+    match new {
+        Ok(form) => format!("{:?}", form.get()),
+        Err(Some(f)) => format!("Invalid form input: {}", f),
+        Err(None) => format!("Form input was invalid UTF8."),
+    };
     Json(Response{
         code: 0,
         msg: "操作成功".to_string(),
@@ -53,6 +70,6 @@ fn not_found() -> Json<Response> {
 }
 
 fn main() {
-    rocket::ignite().mount("/", routes![index]).catch(catchers![not_found]).launch();
-    rocket::ignite().mount("/post", routes![agree, disagree, new]).catch(catchers![not_found]).launch();
+    rocket::ignite().mount("/", routes![index]).
+    mount("/post", routes![agree, disagree, new]).catch(catchers![not_found]).launch();
 }

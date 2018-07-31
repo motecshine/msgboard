@@ -35,7 +35,7 @@ fn agree(id: u8) -> Json<Response> {
     println!("{}", &id);
     Json(Response{
         code: 0,
-        msg: "操作成功".to_string(),
+        msg: "success".to_string(),
     })
 }
 
@@ -44,7 +44,7 @@ fn disagree(id: u8) -> Json<Response> {
     println!("{}", &id);
     Json(Response{
         code: 0,
-        msg: "操作成功".to_string(),
+        msg: "success".to_string(),
     })
 }
 
@@ -57,7 +57,7 @@ fn new<'r>(new: Result<Form<'r, NewPostsForm>, Option<String>>) -> Json<Response
     };
     Json(Response{
         code: 0,
-        msg: "操作成功".to_string(),
+        msg: "success".to_string(),
     })
 }
 
@@ -65,7 +65,7 @@ fn new<'r>(new: Result<Form<'r, NewPostsForm>, Option<String>>) -> Json<Response
 fn not_found() -> Json<Response> {
     Json(Response{
          code: 1,
-         msg: "页面没找到".to_string(),
+         msg: "page not found!".to_string(),
     })
 }
 

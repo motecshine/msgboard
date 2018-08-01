@@ -17,7 +17,7 @@ struct Response {
 
 #[derive(Debug, FromForm)]
 struct NewPostsForm {
-    types: u8,
+    types: i64,
     content: String,
 }
 

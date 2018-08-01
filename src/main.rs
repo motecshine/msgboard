@@ -46,12 +46,8 @@ fn disagree(id: u8) -> Json<Response> {
 }
 
 #[post("/new", data = "<new>")]
-fn new<'r>(new: Result<Form<'r, NewPostsForm>, Option<String>>) -> Json<Response> {
-    match new {
-        Ok(form) => format!("{:?}", form.get()),
-        Err(Some(f)) => format!("Invalid form input: {}", f),
-        Err(None) => format!("Form input was invalid UTF8."),
-    };
+fn new<'r>(new: Form<NewPostsForm>) -> Json<Response> {
+    println!("{}", new.get().types);
     Json(Response{
         code: 0,
         msg: "success".to_string(),

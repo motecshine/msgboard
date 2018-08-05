@@ -3,11 +3,14 @@
 
 extern crate rocket;
 extern crate rocket_contrib;
+extern crate diesel;
+extern crate msgboard;
 #[macro_use] extern crate serde_derive;
 
 
 use rocket::request::{Form};
 use rocket_contrib::{Json};
+use msgboard::*;
 
 #[derive(Serialize)]
 struct Response { 
@@ -17,7 +20,7 @@ struct Response {
 
 #[derive(Debug, FromForm)]
 struct NewPostsForm {
-    types: i64,
+    types: i32,
     content: String,
 }
 
@@ -47,7 +50,9 @@ fn disagree(id: u8) -> Json<Response> {
 
 #[post("/new", data = "<new>")]
 fn new<'r>(new: Form<NewPostsForm>) -> Json<Response> {
+    let conn = establish_connection();
     println!("{}", new.get().types);
+    create_post(&conn, &new.get().content, &new.get().types);
     Json(Response{
         code: 0,
         msg: "success".to_string(),

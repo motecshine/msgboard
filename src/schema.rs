@@ -5,6 +5,6 @@ table! {
         types -> Integer,
         agree -> Integer,
         disagree -> Integer,
-        created_at -> Integer,
+        created_at -> Timestamp,
     }
 }

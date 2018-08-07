@@ -66,11 +66,17 @@ fn disagree(id: i32) -> Json<Response> {
 fn new<'r>(new: Form<NewPostsForm>) -> Json<Response> {
     let conn = establish_connection();
     println!("{}", new.get().types);
-    create_post(&conn, &new.get().content, &new.get().types);
-    Json(Response {
-        code: 0,
-        msg: "success".to_string(),
-    })
+    let result = create_post(&conn, &new.get().content, &new.get().types);
+    match result {
+        Ok(_) => Json(Response {
+            code: 0,
+            msg: "ok".to_string(),
+        }),
+        Err(err) => Json(Response {
+            code: 0,
+            msg: err.to_string(),
+        }),
+    }
 }
 
 #[catch(404)]

@@ -21,7 +21,7 @@ pub fn establish_connection() -> MysqlConnection {
         .expect(&format!("Error connecting to {}", database_url))
 }
 
-pub fn create_post(conn: &MysqlConnection, content: &str, types: &i32) -> Post {
+pub fn create_post(conn: &MysqlConnection, content: &str, types: &i32) -> diesel::QueryResult<usize> {
     use schema::posts::dsl::{id, posts};
     let new_post = NewPost {
         content: content,
@@ -33,8 +33,6 @@ pub fn create_post(conn: &MysqlConnection, content: &str, types: &i32) -> Post {
     diesel::insert_into(posts)
         .values(&new_post)
         .execute(conn)
-        .expect("Error saving new post");
-    posts.order(id.desc()).first(conn).unwrap()
 }
 
 pub fn update_agree(conn: &MysqlConnection, _id: &i32) -> diesel::QueryResult<usize> {

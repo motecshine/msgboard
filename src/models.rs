@@ -1,8 +1,7 @@
 extern crate chrono;
 
-use schema::posts;
 use chrono::NaiveDateTime;
-
+use schema::posts;
 
 #[derive(Queryable)]
 pub struct Post {
@@ -20,5 +19,5 @@ pub struct NewPost<'a> {
     pub content: &'a str,
     pub agree: &'a i32,
     pub disagree: &'a i32,
-    pub types: &'a i32, 
+    pub types: &'a i32,
 }

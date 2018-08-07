@@ -1,21 +1,21 @@
 #![plugin(rocket_codegen)]
 #![feature(plugin, custom_derive)]
 
-extern crate rocket;
-extern crate rocket_contrib;
 extern crate diesel;
 extern crate msgboard;
-#[macro_use] extern crate serde_derive;
+extern crate rocket;
+extern crate rocket_contrib;
+#[macro_use]
+extern crate serde_derive;
 
-
-use rocket::request::{Form};
-use rocket_contrib::{Json};
 use msgboard::*;
+use rocket::request::Form;
+use rocket_contrib::Json;
 
 #[derive(Serialize)]
-struct Response { 
+struct Response {
     code: u8,
-    msg: String
+    msg: String,
 }
 
 #[derive(Debug, FromForm)]
@@ -24,28 +24,42 @@ struct NewPostsForm {
     content: String,
 }
 
-
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
 }
 
 #[put("/agree/<id>")]
-fn agree(id: u8) -> Json<Response> {
+fn agree(id: i32) -> Json<Response> {
     println!("{}", &id);
-    Json(Response{
-        code: 0,
-        msg: "success".to_string(),
-    })
+    let conn = establish_connection();
+    let result = update_agree(&conn, &id);
+    match result {
+        Ok(_) => Json(Response {
+            code: 0,
+            msg: "ok".to_string(),
+        }),
+        Err(err) => Json(Response {
+            code: 0,
+            msg: err.to_string(),
+        }),
+    }
 }
 
 #[put("/disagree/<id>")]
-fn disagree(id: u8) -> Json<Response> {
-    println!("{}", &id);
-    Json(Response{
-        code: 0,
-        msg: "success".to_string(),
-    })
+fn disagree(id: i32) -> Json<Response> {
+    let conn = establish_connection();
+    let result = update_disagree(&conn, &id);
+    match result {
+        Ok(_) => Json(Response {
+            code: 0,
+            msg: "ok".to_string(),
+        }),
+        Err(err) => Json(Response {
+            code: 0,
+            msg: err.to_string(),
+        }),
+    }
 }
 
 #[post("/new", data = "<new>")]
@@ -53,7 +67,7 @@ fn new<'r>(new: Form<NewPostsForm>) -> Json<Response> {
     let conn = establish_connection();
     println!("{}", new.get().types);
     create_post(&conn, &new.get().content, &new.get().types);
-    Json(Response{
+    Json(Response {
         code: 0,
         msg: "success".to_string(),
     })
@@ -61,13 +75,16 @@ fn new<'r>(new: Form<NewPostsForm>) -> Json<Response> {
 
 #[catch(404)]
 fn not_found() -> Json<Response> {
-    Json(Response{
-         code: 1,
-         msg: "page not found!".to_string(),
+    Json(Response {
+        code: 1,
+        msg: "page not found!".to_string(),
     })
 }
 
 fn main() {
-    rocket::ignite().mount("/", routes![index]).
-    mount("/post", routes![agree, disagree, new]).catch(catchers![not_found]).launch();
+    rocket::ignite()
+        .mount("/", routes![index])
+        .mount("/post", routes![agree, disagree, new])
+        .catch(catchers![not_found])
+        .launch();
 }

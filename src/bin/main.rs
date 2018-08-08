@@ -12,6 +12,8 @@ use msgboard::*;
 use rocket::request::Form;
 use rocket_contrib::Json;
 
+static mut DB: Option<diesel::MysqlConnection> = None;
+
 #[derive(Serialize)]
 struct Response {
     code: u8,
@@ -31,51 +33,67 @@ fn index() -> &'static str {
 
 #[put("/agree/<id>")]
 fn agree(id: i32) -> Json<Response> {
-    println!("{}", &id);
-    let conn = establish_connection();
-    let result = update_agree(&conn, &id);
-    match result {
-        Ok(_) => Json(Response {
-            code: 0,
-            msg: "ok".to_string(),
-        }),
-        Err(err) => Json(Response {
-            code: 0,
-            msg: err.to_string(),
-        }),
+   unsafe {
+        match DB {
+            Some(ref mut conn) => match update_agree(&conn, &id) {
+                Ok(_) => Json(Response {
+                    code: 0,
+                    msg: "ok".to_string(),
+                }),
+                Err(err) => Json(Response {
+                    code: 0,
+                    msg: err.to_string(),
+                }),
+            },
+            None => Json(Response {
+                code: 0,
+                msg: "db error".to_string(),
+            }),
+        }
     }
 }
 
 #[put("/disagree/<id>")]
 fn disagree(id: i32) -> Json<Response> {
-    let conn = establish_connection();
-    let result = update_disagree(&conn, &id);
-    match result {
-        Ok(_) => Json(Response {
-            code: 0,
-            msg: "ok".to_string(),
-        }),
-        Err(err) => Json(Response {
-            code: 0,
-            msg: err.to_string(),
-        }),
+    unsafe {
+        match DB {
+            Some(ref mut conn) => match update_disagree(&conn, &id) {
+                Ok(_) => Json(Response {
+                    code: 0,
+                    msg: "ok".to_string(),
+                }),
+                Err(err) => Json(Response {
+                    code: 0,
+                    msg: err.to_string(),
+                }),
+            },
+            None => Json(Response {
+                code: 0,
+                msg: "db error".to_string(),
+            }),
+        }
     }
 }
 
 #[post("/new", data = "<new>")]
 fn new<'r>(new: Form<NewPostsForm>) -> Json<Response> {
-    let conn = establish_connection();
-    println!("{}", new.get().types);
-    let result = create_post(&conn, &new.get().content, &new.get().types);
-    match result {
-        Ok(_) => Json(Response {
-            code: 0,
-            msg: "ok".to_string(),
-        }),
-        Err(err) => Json(Response {
-            code: 0,
-            msg: err.to_string(),
-        }),
+    unsafe {
+        match DB {
+            Some(ref mut conn) => match create_post(&conn, &new.get().content, &new.get().types) {
+                Ok(_) => Json(Response {
+                    code: 0,
+                    msg: "ok".to_string(),
+                }),
+                Err(err) => Json(Response {
+                    code: 0,
+                    msg: err.to_string(),
+                }),
+            },
+            None => Json(Response {
+                code: 0,
+                msg: "db error".to_string(),
+            }),
+        }
     }
 }
 
@@ -88,6 +106,9 @@ fn not_found() -> Json<Response> {
 }
 
 fn main() {
+    unsafe {
+        DB = Some(establish_connection());
+    }
     rocket::ignite()
         .mount("/", routes![index])
         .mount("/post", routes![agree, disagree, new])

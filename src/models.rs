@@ -1,16 +1,16 @@
-extern crate chrono;
 
-use chrono::NaiveDateTime;
+extern crate chrono;
 use schema::posts;
 
-#[derive(Queryable)]
+
+#[derive(Queryable, Serialize)]
 pub struct Post {
     pub id: i32,
     pub content: String,
     pub types: i32,
     pub agree: i32,
     pub disagree: i32,
-    pub created_at: NaiveDateTime,
+    //pub created_at: NaiveDateTime,
 }
 
 #[derive(Insertable)]

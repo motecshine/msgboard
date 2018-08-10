@@ -5,12 +5,12 @@ extern crate diesel;
 extern crate msgboard;
 extern crate rocket;
 extern crate rocket_contrib;
-#[macro_use]
-extern crate serde_derive;
+#[macro_use]extern crate serde_derive;
+#[macro_use]extern crate serde_json;
 
 use msgboard::*;
 use rocket::request::Form;
-use rocket_contrib::Json;
+use rocket_contrib::{Json, Value};
 
 static mut DB: Option<diesel::MysqlConnection> = None;
 
@@ -27,8 +27,22 @@ struct NewPostsForm {
 }
 
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn index() -> Json<Value> {
+     unsafe {
+        match DB {
+            Some(ref mut conn) => match lists(&conn) {
+                Ok(val) => Json(json!(val)),
+                Err(err) => Json(json!(Response {
+                    code: 0,
+                    msg: err.to_string(),
+                })),
+            },
+            None => Json(json!(Response {
+                code: 0,
+                msg: "db error".to_string(),
+            })),
+        }
+    }
 }
 
 #[put("/agree/<id>")]

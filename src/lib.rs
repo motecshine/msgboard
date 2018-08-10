@@ -10,8 +10,14 @@ pub mod schema;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
+#[macro_use]extern crate serde_derive;
 
 use self::models::{NewPost, Post};
+
+pub fn lists(conn: &MysqlConnection) -> diesel::QueryResult<Vec<Post>> {
+    use self::schema::posts::dsl::*;
+    posts.load::<Post>(conn)
+}
 
 pub fn establish_connection() -> MysqlConnection {
     dotenv().ok();
